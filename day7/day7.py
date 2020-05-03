@@ -5,7 +5,7 @@ def solve_intcode(x, phase_setting, input_signal):
     x = x.copy()
     i = 0 # Initialize instruction pointer
     j = 0 # Initialize input counter
-    while x[i] != 99:
+    while i < len(x):
 
         x_i_str = str(x[i])
         # Handle multiple parameter modes
@@ -28,6 +28,9 @@ def solve_intcode(x, phase_setting, input_signal):
             elif par_modes[1] == 1:
                 x2 = x[i + 2]
 
+        if opcode == 99:
+            return None
+
         if opcode == 1:
             result = x1 + x2
             x[x[i + 3]] = result
@@ -41,7 +44,7 @@ def solve_intcode(x, phase_setting, input_signal):
             i += (n_para + 1)
 
         elif opcode == 3:
-            if j == 0:
+            if phase_setting is not None and j == 0:
                 result = phase_setting
             else:
                 result = input_signal
@@ -86,16 +89,36 @@ def solve_intcode(x, phase_setting, input_signal):
             i += (n_para + 1)
 
 
-def output_signal(intcode, phase_seq):
+def any_break(signals):
+    for sig in signals:
+        if sig is None:
+            return True
+    return False
+
+def output_signal(intcode, phase_seq, feedback):
     out = 0
+
     for i in range(5):
         out = solve_intcode(intcode, phase_setting=phase_seq[i], input_signal=out)
+
+    if feedback:
+        all_signals = []
+        output_signals = []
+        while True:
+            for i in range(5):
+                out = solve_intcode(intcode, phase_setting=None, input_signal=out)
+                all_signals.append(out)
+                if i == 5:
+                    output_signals.append(out)
+                if any_break(all_signals):
+                    return output_signals[-1]
+
     return out
 
 
-def max_signal(intcode):
-    all_combi = list(permutations([0,1,2,3,4]))
-    all_signals = [output_signal(intcode, combi) for combi in all_combi]
+def max_signal(intcode, range, feedback):
+    all_combi = list(permutations(range))
+    all_signals = [output_signal(intcode, combi, feedback) for combi in all_combi]
     return max(all_signals)
 
 
@@ -103,11 +126,17 @@ def max_signal(intcode):
 with open('day7/input', 'r') as f:
     puzzle_input = f.read().splitlines()[0]
 
-# puzzle_input = '3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0'
+puzzle_input = '3,26,1001,26,-4,26,3,27,1002,27,2,27,1,27,26,27,4,27,1001,28,-1,28,1005,28,6,99,0,0,5'
 
 puzzle_input = puzzle_input.split(',')
 puzzle_input = [int(x) for x in puzzle_input]
 
 # Part 1
 
-max_signal(intcode=puzzle_input)
+# output_signal(intcode=puzzle_input, phase_seq=[4,3,2,1,0], feedback=False)
+# max_signal(intcode=puzzle_input, range=[0,1,2,3,4], feedback=False)
+
+# Part 2
+
+output_signal(intcode=puzzle_input, phase_seq=[9,8,7,6,5], feedback=True)
+# max_signal(intcode=puzzle_input, range=[5,6,7,8,9], feedback=True)
