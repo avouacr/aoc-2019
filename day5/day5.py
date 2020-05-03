@@ -24,13 +24,6 @@ def solve_intcode(x):
             elif par_modes[1] == 1:
                 x2 = x[i + 2]
 
-        if opcode in [7, 8]:
-            # Third parameter not always needed
-            if par_modes[2] == 0:
-                x3 = x[x[i + 3]]
-            elif par_modes[2] == 1:
-                x3 = x[i + 3]
-
         if opcode == 1:
             result = x1 + x2
             x[x[i + 3]] = result
@@ -57,37 +50,38 @@ def solve_intcode(x):
         elif opcode == 5:
             if x1 != 0:
                 i = x2
+            else:
+                n_para = 2
+                i += (n_para + 1)
 
         elif opcode == 6:
             if x1 == 0:
                 i = x2
+            else:
+                n_para = 2
+                i += (n_para + 1)
 
         elif opcode == 7:
             if x1 < x2:
-                x[x3] = 1
+                x[x[i + 3]] = 1
             else:
-                x[x3] = 0
+                x[x[i + 3]] = 0
             n_para = 3
             i += (n_para + 1)
 
         elif opcode == 8:
             if x1 == x2:
-                x[x3] = 1
+                x[x[i + 3]] = 1
             else:
-                x[x3] = 0
+                x[x[i + 3]] = 0
             n_para = 3
             i += (n_para + 1)
 
-        print(x)
 
-    return True
+with open('day5/input', 'r') as f:
+    puzzle_input = f.read().splitlines()[0]
 
-
-
-# with open('day5/input', 'r') as f:
-#     puzzle_input = f.read().splitlines()[0]
-
-puzzle_input = '3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9'
+# puzzle_input = '3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9'
 
 puzzle_input = puzzle_input.split(',')
 puzzle_input = [int(x) for x in puzzle_input]
